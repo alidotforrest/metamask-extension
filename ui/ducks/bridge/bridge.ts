@@ -2,7 +2,6 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   SortOrder,
   formatChainIdToCaip,
-  getNativeAssetForChainId,
   calcLatestSrcBalance,
   isNonEvmChainId,
   isCrossChain,
@@ -106,6 +105,7 @@ const bridgeSlice = createSlice({
     setFromToken: (state, { payload }: TokenPayload) => {
       state.fromToken = toBridgeToken(payload);
       state.fromTokenBalance = null;
+      state.fromTokenInputValue = null;
       // Unset toToken if it's the same as the fromToken
       if (
         state.fromToken?.assetId &&
@@ -124,19 +124,11 @@ const bridgeSlice = createSlice({
         isBitcoinChainId(state.toChainId)
       ) {
         state.toChainId = null;
-        state.toToken = null;
       }
     },
     setToToken: (state, { payload }: TokenPayload) => {
       const toToken = toBridgeToken(payload);
-      state.toToken = toToken
-        ? {
-            ...toToken,
-            address:
-              toToken.address ||
-              getNativeAssetForChainId(toToken.chainId)?.address,
-          }
-        : toToken;
+      state.toToken = toToken ?? null;
       // Update toChainId if it's different from the toToken chainId
       if (
         toToken?.chainId &&
@@ -212,8 +204,9 @@ const bridgeSlice = createSlice({
         state.fromToken?.chainId,
       );
       if (
-        isTokenInChain && state.fromToken?.address
-          ? action.meta.arg.tokenAddress === state.fromToken.address
+        isTokenInChain && state.fromToken?.assetId
+          ? action.meta.arg.tokenAddress?.toLowerCase() ===
+            state.fromToken.assetId?.toLowerCase()
           : true
       ) {
         state.fromTokenBalance = action.payload?.toString() ?? null;
