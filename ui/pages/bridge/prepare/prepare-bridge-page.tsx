@@ -686,11 +686,11 @@ const PrepareBridgePage = ({
 
                 if (isSwap) {
                   dispatch(setFromToken(toToken));
-                } else {
+                } else if (toToken) {
                   // Handle account switching for Solana
                   dispatch(
                     setFromChain({
-                      chainId: toChain?.chainId,
+                      chainId: toToken.chainId,
                       token: toToken,
                     }),
                   );
