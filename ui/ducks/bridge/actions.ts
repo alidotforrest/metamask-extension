@@ -176,10 +176,6 @@ export const setFromChain = ({
     dispatch: MetaMaskReduxDispatch,
     getState: () => BridgeAppState,
   ) => {
-    if (!chainId) {
-      return;
-    }
-
     // Check for ALL non-EVM chains
     const isNonEvm = isNonEvmChainId(chainId);
 
