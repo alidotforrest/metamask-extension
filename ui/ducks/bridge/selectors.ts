@@ -238,7 +238,10 @@ const getChainRanking = (state: BridgeAppState) => {
       chainId: CaipChainId;
     }[]) ?? []
   ).map((c) => c.chainId);
-  return Array.from(new Set(chainRanking));
+  // Remove duplicates
+  return chainRanking.filter(
+    (value, index, self) => self.indexOf(value) === index,
+  );
 };
 
 export const getFromChains = createDeepEqualSelector(
@@ -279,26 +282,20 @@ export const getFromChains = createDeepEqualSelector(
 /**
  * This matches the network filter in the activity and asset lists
  */
-export const getNetworkFilterOrTopChain = createSelector(
+export const getLastSelectedChain = createSelector(
   [getAllEnabledNetworksForAllNamespaces, getFromChains],
   (enabledEvmNetworks, fromChains): NetworkConfiguration | undefined => {
     // If there is no network filter, return first chain ranked by bridge feature flags
     if (enabledEvmNetworks.length > 1) {
       return fromChains[0];
     }
-    // If there is no match for the filter (i.e testnets), return first chain ranked by bridge feature flags
-    const lastEnabledChainId = enabledEvmNetworks.find((chainId) =>
-      fromChains.some(({ chainId: fromChainId }) => fromChainId === chainId),
-    );
-    return (
-      fromChains.find(
-        ({ chainId: fromChainId }) => fromChainId === lastEnabledChainId,
-      ) ?? fromChains[0]
+    // Find the matching bridge fromChain for the selected network filter
+    return fromChains.find(
+      ({ chainId: fromChainId }) => fromChainId === enabledEvmNetworks[0],
     );
   },
 );
 
-// This returns undefined if the selected chain is not supported by swap/bridge (i.e, testnets)
 export const getFromChain = createDeepEqualSelector(
   [getFromChains, getMultichainProviderConfig, getNetworkFilterOrTopChain],
   (fromChains, providerConfig, networkFilterOrTopChain) => {
@@ -336,13 +333,7 @@ export const getTopAssetsFromFeatureFlags = (
     return undefined;
   }
   const bridgeFeatureFlags = getBridgeFeatureFlags(state);
-  return (
-    bridgeFeatureFlags?.chains[formatChainIdToCaip(chainId)]?.topAssets ??
-    bridgeFeatureFlags?.chainRanking?.find(
-      (c: { chainId: CaipChainId }) =>
-        c.chainId === formatChainIdToCaip(chainId),
-    )?.topAssets
-  );
+  return bridgeFeatureFlags?.chains[formatChainIdToCaip(chainId)]?.topAssets;
 };
 
 const getDefaultTokenPair = createDeepEqualSelector(
@@ -588,11 +579,6 @@ export const getQuoteRefreshRate = createSelector(
     (fromChain &&
       extensionConfig.chains[formatChainIdToCaip(fromChain.chainId)]
         ?.refreshRate) ??
-    (fromChain &&
-      extensionConfig?.chainRanking?.find(
-        (c: { chainId: CaipChainId }) =>
-          c.chainId === formatChainIdToCaip(fromChain.chainId),
-      )?.refreshRate) ??
     extensionConfig.refreshRate,
 );
 export const getBridgeSortOrder = (state: BridgeAppState) =>
@@ -1089,13 +1075,9 @@ export const selectNoFeeAssets = createSelector(
     const caipChainId = formatChainIdToCaip(chainId);
     return (
       (
-        (bridgeFeatureFlags?.chains?.[caipChainId] as unknown as {
+        bridgeFeatureFlags?.chains?.[caipChainId] as unknown as {
           noFeeAssets?: string[];
-        }) ??
-        bridgeFeatureFlags?.chainRanking?.find(
-          (c: { chainId: CaipChainId }) =>
-            c.chainId === formatChainIdToCaip(chainId),
-        )?.noFeeAssets
+        }
       )?.noFeeAssets ?? []
     );
   },

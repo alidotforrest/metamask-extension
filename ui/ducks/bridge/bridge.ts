@@ -108,11 +108,11 @@ const bridgeSlice = createSlice({
       state.fromTokenInputValue = null;
       // Unset toToken if it's the same as the fromToken
       if (
-        state.fromToken?.assetId &&
-        state.toToken?.assetId &&
-        // TODO: determine if this is necessary.
-        state.fromToken.assetId?.toLowerCase() ===
-          state.toToken.assetId?.toLowerCase()
+        state.fromToken?.address === state.toToken?.address ||
+        (state.fromToken?.assetId &&
+          state.toToken?.assetId &&
+          state.fromToken.assetId?.toLowerCase() ===
+            state.toToken.assetId?.toLowerCase())
       ) {
         state.toToken = null;
       }

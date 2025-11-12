@@ -10,6 +10,7 @@ import classnames from 'classnames';
 import { debounce } from 'lodash';
 import { type TokenListMap } from '@metamask/assets-controllers';
 import { type NetworkConfiguration } from '@metamask/network-controller';
+import { zeroAddress } from 'ethereumjs-util';
 import {
   formatChainIdToCaip,
   isSolanaChainId,
@@ -540,7 +541,12 @@ const PrepareBridgePage = ({
             dispatch(setFromTokenInputValue(e));
           }}
           onAssetChange={(token) => {
-            dispatch(setFromToken(token));
+//             dispatch(setFromToken(token));
+            const bridgeToken = {
+              ...token,
+              address: token.address ?? zeroAddress(),
+            };
+            dispatch(setFromToken(bridgeToken));
           }}
           networkProps={{
             network: fromChain,
@@ -549,7 +555,7 @@ const PrepareBridgePage = ({
               enableMissingNetwork(networkConfig.chainId);
               dispatch(
                 setFromChain({
-                  networkConfig: networkConfig as NetworkConfiguration,
+                  chainId: networkConfig.chainId,
                   selectedAccount,
                 }),
               );
@@ -633,6 +639,7 @@ const PrepareBridgePage = ({
               disabled={
                 isSwitchingTemporarilyDisabled ||
                 !isValidQuoteRequest(quoteRequest, false) ||
+                // Check if the toChain is an enabled fromChain
                 (toChain &&
                   !fromChains.some(
                     ({ chainId: fromChainId }) =>
@@ -691,7 +698,7 @@ const PrepareBridgePage = ({
                   // Handle account switching for Solana
                   dispatch(
                     setFromChain({
-                      networkConfig: toChain,
+                      chainId: toChain?.chainId,
                       token: toToken,
                       selectedAccount,
                     }),
