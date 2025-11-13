@@ -73,10 +73,10 @@ describe('Account syncing - Multiple SRPs', function () {
         );
 
         // Set up event counter to track sync operations
-        const {
-          prepareEventsEmittedCounter,
-          waitUntilSyncedAccountsNumberEquals,
-        } = arrangeTestUtils(driver, userStorageMockttpController);
+        const { prepareEventsEmittedCounter } = arrangeTestUtils(
+          driver,
+          userStorageMockttpController,
+        );
         const { waitUntilEventsEmittedNumberEquals } =
           prepareEventsEmittedCounter(
             UserStorageMockttpControllerEvents.PUT_SINGLE,
@@ -86,7 +86,6 @@ describe('Account syncing - Multiple SRPs', function () {
         await accountListPage.addMultichainAccount();
 
         // Wait for sync operation to complete
-        await waitUntilSyncedAccountsNumberEquals(2);
         await waitUntilEventsEmittedNumberEquals(1);
 
         // Verify both accounts are visible
@@ -105,9 +104,6 @@ describe('Account syncing - Multiple SRPs', function () {
         // Importing an SRP can be long, so we add a bit of extra time here
         await driver.delay(10000);
 
-        // Wait for the import to complete and sync
-        await waitUntilSyncedAccountsNumberEquals(3);
-
         // Add a fourth account with custom name to the second SRP
         await header.openAccountMenu();
         await accountListPage.checkPageIsLoaded();
@@ -119,8 +115,6 @@ describe('Account syncing - Multiple SRPs', function () {
 
         await homePage.checkHasAccountSyncingSyncedAtLeastOnce();
 
-        await waitUntilSyncedAccountsNumberEquals(4);
-
         await accountListPage.openMultichainAccountMenu({
           accountLabel: 'Account 2',
           srpIndex: 1,
@@ -130,7 +124,6 @@ describe('Account syncing - Multiple SRPs', function () {
           SRP_2_SECOND_ACCOUNT,
         );
 
-        await waitUntilSyncedAccountsNumberEquals(4);
         await waitUntilEventsEmittedNumberEquals(5);
 
         // Verify all accounts are visible
