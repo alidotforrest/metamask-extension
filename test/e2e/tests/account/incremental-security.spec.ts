@@ -12,7 +12,6 @@ import OnboardingPasswordPage from '../../page-objects/pages/onboarding/onboardi
 import SecureWalletPage from '../../page-objects/pages/onboarding/secure-wallet-page';
 import StartOnboardingPage from '../../page-objects/pages/onboarding/start-onboarding-page';
 import TestDappSendEthWithPrivateKey from '../../page-objects/pages/test-dapp-send-eth-with-private-key';
-import AddressListModal from '../../page-objects/pages/multichain/address-list-modal';
 
 describe('Incremental Security', function (this: Suite) {
   it('Back up Secret Recovery Phrase from backup reminder', async function () {
@@ -82,9 +81,6 @@ describe('Incremental Security', function (this: Suite) {
         await homePage.checkPageIsLoaded();
         await homePage.clickBackupRemindMeLaterButton();
         await homePage.headerNavbar.clickAddressCopyButton();
-        const addressListModal = new AddressListModal(driver);
-        await addressListModal.clickCopyButton();
-        await addressListModal.goBack();
 
         // switched to Dapp and send eth to the current account
         const testDapp = new TestDappSendEthWithPrivateKey(driver);
